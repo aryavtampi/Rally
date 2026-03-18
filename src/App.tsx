@@ -15,6 +15,8 @@ import EventDetailModal from './components/EventDetailModal';
 import HighlightsTab from './components/HighlightsTab';
 import MediaUploadSheet from './components/MediaUploadSheet';
 import OnboardingFlow from './components/OnboardingFlow';
+import TermsGuidelinesModal from './components/TermsGuidelinesModal';
+import ReportModal from './components/ReportModal';
 
 const CURRENT_USER: CurrentUser = {
   id: 'user-me',
@@ -372,11 +374,10 @@ const App: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(() => getUserPrefs() === null);
   const [feedMode, setFeedMode] = useState<FeedMode>('trending');
   const [engagement, setEngagement] = useState<EngagementCounts>(() => getEngagementCounts());
-  const [activeTab, setActiveTab] = useState<AppTab>(() => {
-    const p = getUserPrefs();
-    if (!p) return 'feed';
-    return p.role === 'host' ? 'profile' : 'feed';
-  });
+  const [activeTab, setActiveTab] = useState<AppTab>('feed');
+
+  const [showTerms, setShowTerms] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'event' | 'media'; name: string } | null>(null);
 
   const userRole = userPrefs?.role ?? 'attendee';
   const { colors, isDark } = useTheme();
@@ -385,13 +386,8 @@ const App: React.FC = () => {
     saveUserPrefs(prefs);
     setUserPrefs(prefs);
     setShowOnboarding(false);
-    if (prefs.role === 'host') {
-      setFeedMode('foryou');
-      setActiveTab('profile');
-    } else {
-      setFeedMode('friends');
-      setActiveTab('feed');
-    }
+    setFeedMode('friends');
+    setActiveTab('feed');
   };
 
   const handleResetDemo = () => {
@@ -764,8 +760,8 @@ const App: React.FC = () => {
 
           {activeTab === 'myevents' && <MyEventsView events={events} currentUser={CURRENT_USER} friendIds={friendIds} onGoing={handleGoing} onInterested={handleInterested} />}
           {activeTab === 'friends' && <FriendsView friendIds={friendIds} onToggleFriend={handleToggleFriend} allUsers={SEED_USERS} currentUser={CURRENT_USER} events={events} />}
-          {activeTab === 'highlights' && <HighlightsTab events={events} />}
-          {activeTab === 'profile' && <ProfileView currentUser={CURRENT_USER} events={events} friendIds={friendIds} onResetDemo={handleResetDemo} userRole={userRole} onNavigate={setActiveTab} onShowCreate={() => setShowCreate(true)} />}
+          {activeTab === 'highlights' && <HighlightsTab events={events} onReportMedia={(name) => setReportTarget({ type: 'media', name })} />}
+          {activeTab === 'profile' && <ProfileView currentUser={CURRENT_USER} events={events} friendIds={friendIds} onResetDemo={handleResetDemo} userRole={userRole} onNavigate={setActiveTab} onShowCreate={() => setShowCreate(true)} onShowTerms={() => setShowTerms(true)} />}
         </div>
 
         {/* Modals rendered as direct children of the phone frame so that
@@ -784,6 +780,7 @@ const App: React.FC = () => {
             onRejectMedia={handleRejectMedia}
             onRemoveFromReel={handleRemoveFromReel}
             userRole={userRole}
+            onReportEvent={(title) => setReportTarget({ type: 'event', name: title })}
           />
         )}
         {uploadTarget && (
@@ -797,7 +794,16 @@ const App: React.FC = () => {
           />
         )}
 
-        {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} />}
+        {showOnboarding && <OnboardingFlow onComplete={handleOnboardingComplete} onShowTerms={() => setShowTerms(true)} />}
+
+        {showTerms && <TermsGuidelinesModal onClose={() => setShowTerms(false)} />}
+        {reportTarget && (
+          <ReportModal
+            type={reportTarget.type}
+            itemName={reportTarget.name}
+            onClose={() => setReportTarget(null)}
+          />
+        )}
 
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       </div>

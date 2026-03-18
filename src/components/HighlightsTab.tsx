@@ -5,6 +5,7 @@ import UserAvatar from './UserAvatar';
 
 interface HighlightsTabProps {
   events: EventItem[];
+  onReportMedia?: (mediaTitle: string) => void;
 }
 
 type Filter = 'all' | 'photo' | 'video';
@@ -27,7 +28,7 @@ const darken = (hex: string): string => {
   return `rgb(${r},${g},${b})`;
 };
 
-const HighlightsTab: React.FC<HighlightsTabProps> = ({ events }) => {
+const HighlightsTab: React.FC<HighlightsTabProps> = ({ events, onReportMedia }) => {
   const { colors, isDark } = useTheme();
   const [filter, setFilter] = useState<Filter>('all');
   const [liked, setLiked] = useState<Set<string>>(new Set());
@@ -218,6 +219,7 @@ const HighlightsTab: React.FC<HighlightsTabProps> = ({ events }) => {
                 colors={colors}
                 isLiked={liked.has(media.id)}
                 onLike={() => toggleLike(media.id)}
+                onReport={onReportMedia ? () => onReportMedia(media.eventTitle) : undefined}
               />
             ))}
           </div>
@@ -234,9 +236,10 @@ interface HighlightCardProps {
   colors: any;
   isLiked: boolean;
   onLike: () => void;
+  onReport?: () => void;
 }
 
-const HighlightCard: React.FC<HighlightCardProps> = ({ media, index, isDark, isLiked, onLike }) => {
+const HighlightCard: React.FC<HighlightCardProps> = ({ media, index, isDark, isLiked, onLike, onReport }) => {
   return (
     <div
       className="card-hover"
@@ -367,40 +370,70 @@ const HighlightCard: React.FC<HighlightCardProps> = ({ media, index, isDark, isL
             </div>
           </div>
 
-          {/* Like button */}
-          <button
-            onClick={onLike}
-            style={{
-              background: isLiked ? 'rgba(239,68,68,0.28)' : 'rgba(0,0,0,0.32)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: isLiked ? '0.5px solid rgba(239,68,68,0.50)' : '0.5px solid rgba(255,255,255,0.22)',
-              borderRadius: 10,
-              width: 36,
-              height: 36,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-              fontFamily: 'inherit',
-              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              animation: isLiked ? 'popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both' : 'none',
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill={isLiked ? '#EF4444' : 'none'}
-              stroke={isLiked ? '#EF4444' : 'rgba(255,255,255,0.85)'}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* Report button */}
+            {onReport && (
+              <button
+                onClick={onReport}
+                style={{
+                  background: 'rgba(0,0,0,0.32)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '0.5px solid rgba(255,255,255,0.22)',
+                  borderRadius: 10,
+                  width: 28,
+                  height: 28,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  fontFamily: 'inherit',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.70)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                  <line x1="4" y1="22" x2="4" y2="15" />
+                </svg>
+              </button>
+            )}
+
+            {/* Like button */}
+            <button
+              onClick={onLike}
+              style={{
+                background: isLiked ? 'rgba(239,68,68,0.28)' : 'rgba(0,0,0,0.32)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: isLiked ? '0.5px solid rgba(239,68,68,0.50)' : '0.5px solid rgba(255,255,255,0.22)',
+                borderRadius: 10,
+                width: 36,
+                height: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0,
+                fontFamily: 'inherit',
+                transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                animation: isLiked ? 'popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both' : 'none',
+              }}
             >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill={isLiked ? '#EF4444' : 'none'}
+                stroke={isLiked ? '#EF4444' : 'rgba(255,255,255,0.85)'}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

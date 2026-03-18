@@ -11,10 +11,11 @@ interface ProfileViewProps {
   userRole: 'host' | 'attendee';
   onNavigate: (tab: AppTab) => void;
   onShowCreate: () => void;
+  onShowTerms: () => void;
 }
 
 
-const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, events, friendIds, onResetDemo, userRole, onNavigate, onShowCreate }) => {
+const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, events, friendIds, onResetDemo, userRole, onNavigate, onShowCreate, onShowTerms }) => {
   const { colors, isDark, toggleTheme } = useTheme();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -333,6 +334,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, events, friendId
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '16px 20px',
+              borderBottom: `1px solid ${isDark ? 'rgba(51,65,85,0.3)' : 'rgba(0,0,0,0.06)'}`,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -342,6 +344,66 @@ const ProfileView: React.FC<ProfileViewProps> = ({ currentUser, events, friendId
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: colors.textPrimary }}>Privacy</div>
                 <div style={{ fontSize: 12, color: colors.textMuted }}>Manage your data</div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+
+          {/* Terms & Conditions */}
+          <div
+            className="settings-row"
+            onClick={onShowTerms}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              borderBottom: `1px solid ${isDark ? 'rgba(51,65,85,0.3)' : 'rgba(0,0,0,0.06)'}`,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: colors.textPrimary }}>Terms & Conditions</div>
+                <div style={{ fontSize: 12, color: colors.textMuted }}>Usage policies</div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+
+          {/* Community Guidelines */}
+          <div
+            className="settings-row"
+            onClick={onShowTerms}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 20px',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: colors.textPrimary }}>Community Guidelines</div>
+                <div style={{ fontSize: 12, color: colors.textMuted }}>Standards & safety</div>
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

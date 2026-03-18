@@ -4,6 +4,7 @@ import { EventCategory, TimeOfDay, UserPrefs } from '../types';
 
 interface OnboardingFlowProps {
   onComplete: (prefs: UserPrefs) => void;
+  onShowTerms: () => void;
 }
 
 const INTEREST_CHIPS: { key: EventCategory; label: string }[] = [
@@ -24,9 +25,8 @@ const TIME_CHIPS: { key: TimeOfDay; label: string }[] = [
   { key: 'latenight', label: 'Late nights' },
 ];
 
-const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
+const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onShowTerms }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [role, setRole] = useState<'host' | 'attendee' | null>(null);
   const [interests, setInterests] = useState<Set<EventCategory>>(new Set());
   const [times, setTimes] = useState<Set<TimeOfDay>>(new Set());
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
@@ -34,7 +34,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const goNext = () => {
     setDirection('forward');
-    if (step === 1 && role) setStep(2);
+    if (step === 1) setStep(2);
     else if (step === 2) setStep(3);
   };
 
@@ -46,7 +46,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
 
   const handleFinish = () => {
     onComplete({
-      role: role!,
+      role: 'attendee',
       favoriteCategories: Array.from(interests),
       preferredTimes: Array.from(times),
     });
@@ -135,35 +135,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
     transition: 'color 0.15s ease',
   };
 
-  const roleCardStyle = (selected: boolean): React.CSSProperties => ({
-    padding: '28px 24px',
-    borderRadius: 22,
-    border: selected
-      ? '1.5px solid rgba(123,114,255,0.50)'
-      : isDark
-        ? '1px solid rgba(255,255,255,0.08)'
-        : '1px solid rgba(0,0,0,0.04)',
-    background: isDark
-      ? selected ? 'rgba(123,114,255,0.10)' : 'rgba(22,24,48,0.65)'
-      : selected ? 'rgba(123,114,255,0.04)' : 'rgba(255,255,255,0.72)',
-    backdropFilter: 'blur(28px) saturate(180%)',
-    WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-    boxShadow: selected
-      ? isDark
-        ? '0 1px 0 rgba(255,255,255,0.08) inset, 0 8px 32px rgba(123,114,255,0.18)'
-        : '0 1px 0 rgba(255,255,255,0.90) inset, 0 8px 32px rgba(123,114,255,0.12)'
-      : isDark
-        ? '0 1px 0 rgba(255,255,255,0.05) inset, 0 4px 20px rgba(0,0,0,0.30)'
-        : '0 1px 0 rgba(255,255,255,0.90) inset, 0 4px 20px rgba(100,80,200,0.08)',
-    cursor: 'pointer',
-    textAlign: 'left' as const,
-    fontFamily: 'inherit',
-    transition: 'all 0.25s cubic-bezier(0.22, 1, 0.36, 1)',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 18,
-  });
-
   return (
     <div
       style={{
@@ -199,7 +170,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
       </div>
 
       {/* Content area */}
-      <div key={animKey} style={{ flex: 1, padding: '40px 24px 24px', display: 'flex', flexDirection: 'column', animation: slideAnim, overflow: 'hidden' }}>
+      <div key={animKey} style={{ flex: 1, padding: '40px 24px 90px', display: 'flex', flexDirection: 'column', animation: slideAnim, overflow: 'auto' }}>
         {step === 1 && (
           <>
             {/* Rally logo mark */}
@@ -221,112 +192,13 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
             </div>
 
             <h2 style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary, margin: '0 0 6px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
-              How are you using Rally?
-            </h2>
-            <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 36px', lineHeight: 1.5 }}>
-              This helps us tailor your experience.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-              {/* Host card */}
-              <button
-                onClick={() => { setRole('host'); goNext(); }}
-                className="btn-press"
-                style={roleCardStyle(role === 'host')}
-              >
-                {/* Icon */}
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 14,
-                    background: isDark ? 'rgba(123,114,255,0.15)' : 'rgba(123,114,255,0.08)',
-                    border: isDark ? '1px solid rgba(123,114,255,0.20)' : '1px solid rgba(123,114,255,0.12)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    marginTop: 2,
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B72FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                    <path d="M2 17l10 5 10-5" />
-                    <path d="M2 12l10 5 10-5" />
-                  </svg>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 3, letterSpacing: '-0.01em' }}>
-                    I host events
-                  </div>
-                  <div style={{ fontSize: 13, color: colors.textMuted, lineHeight: 1.45 }}>
-                    Create and manage events, track RSVPs, and grow your audience.
-                  </div>
-                </div>
-                {/* Chevron */}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 4, opacity: 0.5 }}>
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-
-              {/* Attendee card */}
-              <button
-                onClick={() => { setRole('attendee'); goNext(); }}
-                className="btn-press"
-                style={roleCardStyle(role === 'attendee')}
-              >
-                {/* Icon */}
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 14,
-                    background: isDark ? 'rgba(123,114,255,0.15)' : 'rgba(123,114,255,0.08)',
-                    border: isDark ? '1px solid rgba(123,114,255,0.20)' : '1px solid rgba(123,114,255,0.12)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    marginTop: 2,
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B72FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                    <line x1="9" y1="9" x2="9.01" y2="9" />
-                    <line x1="15" y1="9" x2="15.01" y2="9" />
-                  </svg>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 17, fontWeight: 600, color: colors.textPrimary, marginBottom: 3, letterSpacing: '-0.01em' }}>
-                    I attend events
-                  </div>
-                  <div style={{ fontSize: 13, color: colors.textMuted, lineHeight: 1.45 }}>
-                    Discover events, RSVP with friends, and never miss out.
-                  </div>
-                </div>
-                {/* Chevron */}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 4, opacity: 0.5 }}>
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7B72FF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Step 2 of 3</span>
-            </div>
-            <h2 style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary, margin: '0 0 4px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
-              What kinds of events are you into?
+              Welcome to Rally
             </h2>
             <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 32px', lineHeight: 1.5 }}>
-              Pick a few so we can tailor your feed.
+              Pick a few interests so we can tailor your feed.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, flex: 1, alignContent: 'flex-start' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignContent: 'flex-start' }}>
               {INTEREST_CHIPS.map((chip, i) => (
                 <button
                   key={chip.key}
@@ -342,7 +214,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
               ))}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 24, flexShrink: 0 }}>
+            <div style={{ flex: 1, minHeight: 24 }} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button
                 onClick={goNext}
                 className="btn-press"
@@ -355,17 +229,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
               >
                 Continue
               </button>
-              <button onClick={goBack} style={ghostBtnStyle}>
-                Back
-              </button>
             </div>
           </>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <>
             <div style={{ marginBottom: 6 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7B72FF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Step 3 of 3</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#7B72FF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Step 2 of 3</span>
             </div>
             <h2 style={{ fontSize: 28, fontWeight: 700, color: colors.textPrimary, margin: '0 0 4px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
               What times usually work for you?
@@ -374,7 +245,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
               We'll prioritize events in your preferred time slots.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, flex: 1, alignContent: 'flex-start' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignContent: 'flex-start' }}>
               {TIME_CHIPS.map((chip, i) => (
                 <button
                   key={chip.key}
@@ -390,13 +261,125 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
               ))}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 24, flexShrink: 0 }}>
+            <div style={{ flex: 1, minHeight: 24 }} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+              <button
+                onClick={goNext}
+                className="btn-press"
+                style={primaryBtnStyle}
+              >
+                {times.size > 0 ? 'Continue' : 'Skip'}
+              </button>
+              <button onClick={goBack} style={ghostBtnStyle}>
+                Back
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            {/* Shield icon */}
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                background: isDark ? 'rgba(123,114,255,0.15)' : 'rgba(123,114,255,0.08)',
+                border: isDark ? '1px solid rgba(123,114,255,0.25)' : '1px solid rgba(123,114,255,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 24,
+                boxShadow: isDark
+                  ? '0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 16px rgba(123,114,255,0.20)'
+                  : '0 1px 0 rgba(255,255,255,0.80) inset, 0 4px 16px rgba(123,114,255,0.12)',
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7B72FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: colors.textPrimary, margin: '0 0 8px', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
+              By continuing, you agree to Rally's Terms & Community Guidelines.
+            </h2>
+            <p style={{ fontSize: 15, color: colors.textMuted, margin: '0 0 32px', lineHeight: 1.5 }}>
+              We keep our community safe and respectful.
+            </p>
+
+            {/* View Terms card */}
+            <button
+              onClick={onShowTerms}
+              className="btn-press"
+              style={{
+                width: '100%',
+                padding: '16px 20px',
+                borderRadius: 18,
+                border: isDark
+                  ? '1px solid rgba(255,255,255,0.08)'
+                  : '1px solid rgba(0,0,0,0.04)',
+                background: isDark
+                  ? 'rgba(22,24,48,0.65)'
+                  : 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(28px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+                boxShadow: isDark
+                  ? '0 1px 0 rgba(255,255,255,0.05) inset, 0 4px 20px rgba(0,0,0,0.30)'
+                  : '0 1px 0 rgba(255,255,255,0.90) inset, 0 4px 20px rgba(100,80,200,0.08)',
+                cursor: 'pointer',
+                textAlign: 'left' as const,
+                fontFamily: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                transition: 'all 0.2s ease',
+                marginBottom: 8,
+              }}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 12,
+                  background: isDark ? 'rgba(123,114,255,0.12)' : 'rgba(123,114,255,0.08)',
+                  border: isDark ? '1px solid rgba(123,114,255,0.18)' : '1px solid rgba(123,114,255,0.10)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7B72FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: colors.textPrimary, letterSpacing: '-0.01em' }}>
+                  View Terms & Community Guidelines
+                </div>
+                <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                  Tap to read our full policies
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.5 }}>
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+
+            <div style={{ flex: 1 }} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button
                 onClick={handleFinish}
                 className="btn-press"
                 style={primaryBtnStyle}
               >
-                {times.size > 0 ? 'Finish' : 'Skip'}
+                I Agree & Continue
               </button>
               <button onClick={goBack} style={ghostBtnStyle}>
                 Back

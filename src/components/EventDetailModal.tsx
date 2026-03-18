@@ -16,6 +16,7 @@ interface EventDetailModalProps {
   onRejectMedia?: (eventId: string, mediaId: string) => void;
   onRemoveFromReel?: (eventId: string, mediaId: string) => void;
   userRole?: 'host' | 'attendee';
+  onReportEvent?: (eventTitle: string) => void;
 }
 
 function formatFullDate(isoString: string): string {
@@ -134,6 +135,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   onRejectMedia,
   onRemoveFromReel,
   userRole = 'attendee',
+  onReportEvent,
 }) => {
   const { colors, isDark } = useTheme();
   const [mapsOpen, setMapsOpen] = useState(false);
@@ -614,6 +616,36 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               {isInterested ? `Interested · ${event.interested.length}` : 'Interested'}
             </button>
           </div>
+
+          {/* Report event */}
+          {onReportEvent && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 14 }}>
+              <button
+                onClick={() => onReportEvent(event.title)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: colors.textMuted,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '4px 8px',
+                  borderRadius: 8,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                  <line x1="4" y1="22" x2="4" y2="15" />
+                </svg>
+                Report Event
+              </button>
+            </div>
+          )}
 
           {/* Host stat strip — visible only to hosts */}
           {userRole === 'host' && (
