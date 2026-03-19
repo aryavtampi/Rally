@@ -236,7 +236,6 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onClose, onCreate }
                 animation: isDemo ? 'pulse 1.5s ease-in-out infinite' : 'none',
               }}
             >
-              <span style={{ fontSize: 13 }}>{'\u2728'}</span>
               Demo
             </button>
             <button
