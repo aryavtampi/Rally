@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { EventCategory, CATEGORY_CONFIG } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -37,6 +37,77 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onClose, onCreate }
   const [hasCapacity, setHasCapacity] = useState(false);
   const [useCustomLocation, setUseCustomLocation] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
+  const demoTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const typeText = useCallback((text: string, setter: (v: string) => void, startDelay: number, charDelay: number = 55) => {
+    for (let i = 0; i <= text.length; i++) {
+      const timer = setTimeout(() => {
+        setter(text.slice(0, i));
+      }, startDelay + i * charDelay);
+      demoTimers.current.push(timer);
+    }
+    return startDelay + text.length * charDelay;
+  }, []);
+
+  const runDemo = useCallback(() => {
+    // Clear any previous demo
+    demoTimers.current.forEach(clearTimeout);
+    demoTimers.current = [];
+
+    // Reset all fields
+    setTitle('');
+    setTime('');
+    setLocation('');
+    setCustomLocation('');
+    setNote('');
+    setCategory('other');
+    setCapacity('');
+    setHasCapacity(false);
+    setUseCustomLocation(false);
+    setIsDemo(true);
+
+    // Step 1: Select category (sports) at 300ms
+    const t1 = setTimeout(() => {
+      setFocusedField('category');
+      setCategory('sports');
+    }, 300);
+    demoTimers.current.push(t1);
+
+    // Step 2: Type title starting at 800ms
+    const t2 = setTimeout(() => setFocusedField('title'), 750);
+    demoTimers.current.push(t2);
+    const titleEnd = typeText('Football Watch Party', setTitle, 800);
+
+    // Step 3: Set date/time
+    const timeStart = titleEnd + 300;
+    const t3 = setTimeout(() => {
+      setFocusedField('time');
+      setTime('2025-03-21T16:30');
+    }, timeStart);
+    demoTimers.current.push(t3);
+
+    // Step 4: Set location
+    const locStart = timeStart + 500;
+    const t4 = setTimeout(() => {
+      setFocusedField('location');
+      setLocation('Williams Gymnasium');
+    }, locStart);
+    demoTimers.current.push(t4);
+
+    // Step 5: Type note
+    const noteStart = locStart + 500;
+    const t5 = setTimeout(() => setFocusedField('note'), noteStart - 50);
+    demoTimers.current.push(t5);
+    const noteEnd = typeText('Bring your jersey!', setNote, noteStart);
+
+    // Step 6: Done
+    const t6 = setTimeout(() => {
+      setFocusedField(null);
+      setIsDemo(false);
+    }, noteEnd + 400);
+    demoTimers.current.push(t6);
+  }, [typeText]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,36 +210,66 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ onClose, onCreate }
               Let people know what's happening
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="btn-press"
-            style={{
-              background: isDark
-                ? 'rgba(255,255,255,0.08)'
-                : 'rgba(255,255,255,0.60)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: isDark
-                ? '0.5px solid rgba(255,255,255,0.10)'
-                : '0.5px solid rgba(255,255,255,0.70)',
-              boxShadow: '0 1px 0 rgba(255,255,255,0.50) inset',
-              borderRadius: '50%',
-              width: 36,
-              height: 36,
-              fontSize: 16,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: colors.textMuted,
-              transition: 'background 0.15s',
-            }}
-          >
-            {'\u2715'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              type="button"
+              onClick={runDemo}
+              disabled={isDemo}
+              className="btn-press"
+              style={{
+                background: isDemo
+                  ? 'linear-gradient(180deg, rgba(123,114,255,0.60), rgba(108,99,240,0.65))'
+                  : 'linear-gradient(180deg, rgba(123,114,255,0.18), rgba(108,99,240,0.22))',
+                border: '0.5px solid rgba(123,114,255,0.35)',
+                borderRadius: 20,
+                padding: '6px 14px',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: isDemo ? 'default' : 'pointer',
+                color: isDemo ? '#fff' : '#7B72FF',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+                opacity: isDemo ? 0.7 : 1,
+                animation: isDemo ? 'pulse 1.5s ease-in-out infinite' : 'none',
+              }}
+            >
+              <span style={{ fontSize: 13 }}>{'\u2728'}</span>
+              Demo
+            </button>
+            <button
+              onClick={onClose}
+              className="btn-press"
+              style={{
+                background: isDark
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'rgba(255,255,255,0.60)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: isDark
+                  ? '0.5px solid rgba(255,255,255,0.10)'
+                  : '0.5px solid rgba(255,255,255,0.70)',
+                boxShadow: '0 1px 0 rgba(255,255,255,0.50) inset',
+                borderRadius: '50%',
+                width: 36,
+                height: 36,
+                fontSize: 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: colors.textMuted,
+                transition: 'background 0.15s',
+              }}
+            >
+              {'\u2715'}
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ pointerEvents: isDemo ? 'none' : 'auto' }}>
           {/* Category picker */}
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: labelColor, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
